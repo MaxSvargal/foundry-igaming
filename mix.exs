@@ -74,10 +74,10 @@ defmodule IgamingRef.MixProject do
       {:igniter, "~> 0.6"},
 
       # Foundry — meta-framework for governance
-      {:foundry, path: "../../apps/foundry"},
+      {:foundry_stack, "~> 0.1.1"},
 
       # Server-Driven UI
-      {:ash_sdui, path: "../../packages/ash_sdui"},
+      {:ash_sdui, "~> 0.1"},
 
       # Serialisation
       {:jason, "~> 1.4"},
