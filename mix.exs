@@ -74,7 +74,10 @@ defmodule IgamingRef.MixProject do
       {:igniter, "~> 0.6"},
 
       # Foundry — meta-framework for governance
-      {:foundry, "~> 0.1.6", hex: :foundry_stack},
+      {:foundry, "~> 0.2.0", hex: :foundry_stack},
+
+      # SAT solver — simple_sat is dependency-free (no native compilation)
+      {:simple_sat, ">= 0.1.1 and < 1.0.0-0"},
 
       # Server-Driven UI
       {:ash_sdui, "~> 0.1"},
@@ -91,6 +94,7 @@ defmodule IgamingRef.MixProject do
 
       # Dependency conflict resolution
       {:plug, "~> 1.7", override: true},
+      {:picosat_elixir, "~> 0.2", optional: true},
 
       # Transitive dependencies for Swoosh email client
       {:hackney, "~> 1.9"}
