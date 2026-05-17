@@ -32,7 +32,7 @@ RUN MIX_ENV=prod mix compile && \
 FROM alpine:latest
 
 # Install runtime dependencies
-RUN apk add --no-cache openssl libssl.so.3 bash postgresql-client
+RUN apk add --no-cache openssl bash ca-certificates
 
 WORKDIR /app
 
