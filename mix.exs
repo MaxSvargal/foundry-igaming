@@ -94,7 +94,6 @@ defmodule IgamingRef.MixProject do
 
       # Dependency conflict resolution
       {:plug, "~> 1.7", override: true},
-      {:picosat_elixir, "~> 0.2", optional: true},
 
       # Transitive dependencies for Swoosh email client
       {:hackney, "~> 1.9"}
