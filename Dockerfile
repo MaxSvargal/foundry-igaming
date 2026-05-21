@@ -1,50 +1,49 @@
-# Build stage
-FROM elixir:1.16-alpine AS builder
+ARG ELIXIR_VERSION=1.18.4
+ARG OTP_VERSION=26.0.1
+ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-bookworm-20260518-slim"
+ARG RUNNER_IMAGE="debian:bookworm-slim"
+
+FROM ${BUILDER_IMAGE} AS builder
 
 WORKDIR /app
+ENV MIX_ENV=prod
 
-# Install build dependencies
-RUN apk add --no-cache git build-base
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential git gcc g++ make curl && \
+    rm -rf /var/lib/apt/lists/*
 
-# Copy mix files
-COPY mix.exs mix.lock ./
-
-# Install Elixir dependencies
 RUN mix local.hex --force && \
-    mix local.rebar --force && \
-    mix deps.get --only prod && \
+    mix local.rebar --force
+
+COPY mix.exs mix.lock ./
+COPY config ./config
+RUN mix deps.get --only $MIX_ENV && \
     mix deps.compile
 
-# Copy application code
 COPY . .
 
-# Build assets if present
 RUN if [ -f "assets/package.json" ]; then \
-    apk add --no-cache nodejs npm && \
-    cd assets && npm ci && npm run build && cd ..; \
+    apt-get update && apt-get install -y --no-install-recommends nodejs npm && \
+    cd assets && npm ci && npm run build && cd .. && \
+    rm -rf /var/lib/apt/lists/*; \
 fi
 
-# Create releases
-RUN MIX_ENV=prod mix compile && \
-    MIX_ENV=prod mix release
+RUN mix compile && \
+    mix release
 
-# Runtime stage
-FROM alpine:latest
+FROM ${RUNNER_IMAGE} AS runner
 
-# Install runtime dependencies
-RUN apk add --no-cache openssl bash ca-certificates
+ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS="+fnu"
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libstdc++6 openssl ca-certificates bash curl git && \
+    rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy release from builder
 COPY --from=builder /app/_build/prod/rel/igaming_ref ./
 
-# Expose port
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 CMD curl -sf http://localhost:4000/health || exit 1
+
 EXPOSE 4000
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:4000/health || exit 1
-
-# Run the release
 CMD ["bin/igaming_ref", "start"]
