@@ -34,6 +34,7 @@ RUN mix compile && \
 FROM ${RUNNER_IMAGE} AS runner
 
 ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS="+fnu"
+ENV PHX_SERVER=true SECRET_KEY_BASE=${SECRET_KEY_BASE}
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 openssl ca-certificates bash curl git && \
