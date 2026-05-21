@@ -5,7 +5,7 @@ defmodule IgamingRef.MixProject do
     [
       app: :igaming_ref,
       version: "0.1.0",
-      elixir: "~> 1.16",
+      elixir: "~> 1.18",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -42,7 +42,7 @@ defmodule IgamingRef.MixProject do
       {:ash_authentication, "~> 4.0"},
       {:ash_authentication_phoenix, "~> 2.0"},
       {:ash_state_machine, "~> 0.2"},
-      {:ash_paper_trail, "~> 0.1"},
+      {:ash_paper_trail, "~> 0.5"},
       {:ash_archival, "~> 2.0"},
       {:ash_json_api, "~> 1.0"},
 
