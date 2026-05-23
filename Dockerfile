@@ -25,9 +25,7 @@ COPY . .
 
 # If platform provides runtime.exs, inject it before release is built
 ARG PLATFORM_RUNTIME_EXS_B64
-RUN if [ -n "$PLATFORM_RUNTIME_EXS_B64" ]; then \
-    echo "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; \
-    fi
+RUN if [ ! -z "$PLATFORM_RUNTIME_EXS_B64" ]; then mkdir -p config && printf %s "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; fi
 
 RUN if [ -f "assets/package.json" ]; then \
     apt-get update && apt-get install -y --no-install-recommends nodejs npm && \
