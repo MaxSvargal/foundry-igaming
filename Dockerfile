@@ -25,8 +25,13 @@ COPY . .
 
 # If platform provides runtime.exs, inject it before release is built
 ARG PLATFORM_RUNTIME_EXS_B64
-RUN if [ -n "$PLATFORM_RUNTIME_EXS_B64" ]; then \
-    echo "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; \
+RUN echo "DEBUG: PLATFORM_RUNTIME_EXS_B64 length = $(echo -n $PLATFORM_RUNTIME_EXS_B64 | wc -c) chars" && \
+    if [ -n "$PLATFORM_RUNTIME_EXS_B64" ]; then \
+    echo "DEBUG: Decoding PLATFORM_RUNTIME_EXS_B64..." && \
+    echo "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs && \
+    echo "DEBUG: config/runtime.exs created successfully, size = $(wc -c < config/runtime.exs) bytes"; \
+    else \
+    echo "DEBUG: PLATFORM_RUNTIME_EXS_B64 is empty or not set"; \
     fi
 
 RUN if [ -f "assets/package.json" ]; then \
