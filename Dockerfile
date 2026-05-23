@@ -34,7 +34,7 @@ RUN mix compile && \
 FROM ${RUNNER_IMAGE} AS runner
 
 ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS="+fnu"
-ENV PHX_SERVER=true SECRET_KEY_BASE=${SECRET_KEY_BASE}
+ENV PHX_SERVER=true
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 openssl ca-certificates bash curl git postgresql-client && \
@@ -44,7 +44,29 @@ WORKDIR /app
 
 COPY --from=builder /app/_build/prod/rel/igaming_ref ./
 
+RUN mkdir -p /app/config
+
+COPY <<EOF /app/bin/entrypoint.sh
+#!/bin/bash
+set -eu
+
+APP_NAME="igaming_ref"
+RELEASE_BIN="/app/bin/${APP_NAME}"
+
+if [ ! -x "$RELEASE_BIN" ]; then
+  echo "Release executable not found: $RELEASE_BIN" >&2
+  exit 1
+fi
+
+export RELEASE_NAME="${APP_NAME}"
+export RELEASE_NODE="${APP_NAME}@127.0.0.1"
+
+exec "$RELEASE_BIN" start
+EOF
+
+RUN chmod +x /app/bin/entrypoint.sh
+
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 CMD curl -sf http://localhost:4000/health || exit 1
 
 EXPOSE 4000
-CMD ["bin/igaming_ref", "start"]
+ENTRYPOINT ["/app/bin/entrypoint.sh"]
