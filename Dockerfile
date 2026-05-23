@@ -2,6 +2,7 @@ ARG ELIXIR_VERSION=1.18.4
 ARG OTP_VERSION=26.0.1
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-bookworm-20260518-slim"
 ARG RUNNER_IMAGE="debian:bookworm-slim"
+ARG PLATFORM_RUNTIME_EXS_B64=""
 
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -21,6 +22,12 @@ RUN mix deps.get --only $MIX_ENV && \
     mix deps.compile
 
 COPY . .
+
+# If platform provides runtime.exs, inject it before release is built
+ARG PLATFORM_RUNTIME_EXS_B64
+RUN if [ -n "$PLATFORM_RUNTIME_EXS_B64" ]; then \
+    echo "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; \
+    fi
 
 RUN if [ -f "assets/package.json" ]; then \
     apt-get update && apt-get install -y --no-install-recommends nodejs npm && \
