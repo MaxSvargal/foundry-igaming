@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY --from=builder /app/_build/prod/rel/igaming_ref ./
+COPY --from=builder /app/_build/prod/rel/igaming_ref /app/igaming_ref/
 
 RUN mkdir -p /app/bin
 
@@ -65,7 +65,7 @@ RUN if [ -n "$PREVIEW_MIGRATE_B64" ]; then \
     echo "$PREVIEW_MIGRATE_B64" | base64 -d > /app/bin/migrate.exs; \
     fi
 
-HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 CMD curl -sf http://localhost:4000/health || exit 1
-
-EXPOSE 4000
+HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 CMD  CMD{ TEST:[CMD-SHELL curl -sf http://localhost:4000/" > /dev/null  2>&1 || exit 1 }}
+POSE 4000
 ENTRYPOINT ["/app/bin/entrypoint.sh"]
+
