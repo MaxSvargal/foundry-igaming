@@ -48,7 +48,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY --from=builder /app/_build/prod/rel/igaming_ref ./
+COPY --from=builder /app/_build/prod/rel/igaming_ref /app/igaming_ref/
 
 RUN mkdir -p /app/bin
 
