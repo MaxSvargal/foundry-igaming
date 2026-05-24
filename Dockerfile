@@ -39,6 +39,10 @@ RUN mix compile && \
 
 FROM ${RUNNER_IMAGE} AS runner
 
+ARG PREVIEW_RUNTIME_EXS_B64
+ARG PREVIEW_ENTRYPOINT_B64
+ARG PREVIEW_MIGRATE_B64
+
 ENV LANG=C.UTF-8 LANGUAGE=C.UTF-8 LC_ALL=C.UTF-8 ELIXIR_ERL_OPTIONS="+fnu"
 ENV PHX_SERVER=true
 
@@ -52,8 +56,11 @@ COPY --from=builder /app/_build/prod/rel/igaming_ref /app/igaming_ref/
 
 RUN mkdir -p /app/bin
 
-ARG PREVIEW_ENTRYPOINT_B64
-ARG PREVIEW_MIGRATE_B64
+RUN if [ -n "$PREVIEW_RUNTIME_EXS_B64" ]; then \
+    mkdir -p /app/igaming_ref/etc && \
+    echo "$PREVIEW_RUNTIME_EXS_B64" | base64 -d > /app/igaming_ref/etc/runtime.exs && \
+    echo "DEBUG: Wrote runtime.exs to /app/igaming_ref/etc/runtime.exs ($(wc -c < /app/igaming_ref/etc/runtime.exs) bytes)"; \
+  fi
 
 RUN if [ -n "$PREVIEW_ENTRYPOINT_B64" ]; then \
     echo "$PREVIEW_ENTRYPOINT_B64" | base64 -d > /app/bin/entrypoint.sh && chmod +x /app/bin/entrypoint.sh; \
