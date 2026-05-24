@@ -2,7 +2,9 @@ ARG ELIXIR_VERSION=1.18.4
 ARG OTP_VERSION=26.0.1
 ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-bookworm-20260518-slim"
 ARG RUNNER_IMAGE="debian:bookworm-slim"
-ARG PLATFORM_RUNTIME_EXS_B64=""
+ARG PREVIEW_RUNTIME_EXS_B64=""
+ARG PREVIEW_ENTRYPOINT_B64=""
+ARG PREVIEW_MIGRATE_B64=""
 
 FROM ${BUILDER_IMAGE} AS builder
 
@@ -23,9 +25,8 @@ RUN mix deps.get --only $MIX_ENV && \
 
 COPY . .
 
-# If platform provides runtime.exs, inject it before release is built
-ARG PLATFORM_RUNTIME_EXS_B64
-RUN if [ ! -z "$PLATFORM_RUNTIME_EXS_B64" ]; then mkdir -p config && printf %s "$PLATFORM_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; fi
+ARG PREVIEW_RUNTIME_EXS_B64
+RUN if [ -n "$PREVIEW_RUNTIME_EXS_B64" ]; then mkdir -p config && echo "$PREVIEW_RUNTIME_EXS_B64" | base64 -d > config/runtime.exs; fi
 
 RUN if [ -f "assets/package.json" ]; then \
     apt-get update && apt-get install -y --no-install-recommends nodejs npm && \
@@ -49,27 +50,20 @@ WORKDIR /app
 
 COPY --from=builder /app/_build/prod/rel/igaming_ref ./
 
-RUN mkdir -p /app/config
+RUN mkdir -p /app/bin
 
-COPY <<EOF /app/bin/entrypoint.sh
-#!/bin/bash
-set -eu
+ARG PREVIEW_ENTRYPOINT_B64
+ARG PREVIEW_MIGRATE_B64
 
-APP_NAME="igaming_ref"
-RELEASE_BIN="/app/bin/${APP_NAME}"
+RUN if [ -n "$PREVIEW_ENTRYPOINT_B64" ]; then \
+    echo "$PREVIEW_ENTRYPOINT_B64" | base64 -d > /app/bin/entrypoint.sh && chmod +x /app/bin/entrypoint.sh; \
+    else \
+    printf '#!/bin/sh\nset -e\nAPP_NAME="igaming_ref"\nRELEASE_BIN="/app/bin/${APP_NAME}"\nif [ ! -x "$RELEASE_BIN" ]; then echo "Release executable not found: $RELEASE_BIN" >&2; exit 1; fi\nexec "$RELEASE_BIN" start\n' > /app/bin/entrypoint.sh && chmod +x /app/bin/entrypoint.sh; \
+    fi
 
-if [ ! -x "$RELEASE_BIN" ]; then
-  echo "Release executable not found: $RELEASE_BIN" >&2
-  exit 1
-fi
-
-export RELEASE_NAME="${APP_NAME}"
-export RELEASE_NODE="${APP_NAME}@127.0.0.1"
-
-exec "$RELEASE_BIN" start
-EOF
-
-RUN chmod +x /app/bin/entrypoint.sh
+RUN if [ -n "$PREVIEW_MIGRATE_B64" ]; then \
+    echo "$PREVIEW_MIGRATE_B64" | base64 -d > /app/bin/migrate.exs; \
+    fi
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=5s --retries=3 CMD curl -sf http://localhost:4000/health || exit 1
 
