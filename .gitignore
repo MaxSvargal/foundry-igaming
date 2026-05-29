@@ -1,0 +1,10 @@
+.foundry/scenario_traces
+.foundry/context.lock
+.foundry/local
+_build
+_build_codex
+deps.mcp.json
+.codex
+.specstory
+.vscode
+deps
