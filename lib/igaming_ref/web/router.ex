@@ -1,4 +1,9 @@
 defmodule IgamingRef.Web.Router do
+  @moduledoc """
+  Phoenix router for the iGaming application.
+
+  Defines routes for LiveView pages, API endpoints, and middleware pipelines (browser, api).
+  """
   use Phoenix.Router
   import Phoenix.LiveView.Router
 

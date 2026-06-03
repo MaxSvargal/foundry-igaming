@@ -1,4 +1,9 @@
 defmodule IgamingRef.Web.Endpoint do
+  @moduledoc """
+  Phoenix endpoint for the iGaming reference application.
+
+  Configures the HTTP server, WebSocket connection, and session handling for all requests.
+  """
   use Phoenix.Endpoint, otp_app: :igaming_ref
 
   @doc false

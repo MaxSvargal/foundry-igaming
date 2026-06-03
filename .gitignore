@@ -1,7 +1,10 @@
-.foundry/scenario_traces
-.foundry/context.lock
-.foundry/local
 _build
 _build_codex
-deps
+.codex
+.foundry/context.lock
+.foundry/local
+.foundry/scenario_traces
 .specstory
+.vscode
+deps
+erl_crash.dump

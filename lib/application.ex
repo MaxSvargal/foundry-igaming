@@ -12,7 +12,15 @@ defmodule IgamingRef.Application do
       ] ++ data_children()
 
     opts = [strategy: :one_for_one, name: IgamingRef.Supervisor]
-    Supervisor.start_link(children, opts)
+
+    with {:ok, _pid} <- Supervisor.start_link(children, opts) do
+      # Load seed data on app boot (for preview server demo)
+      if not Application.get_env(:igaming_ref, :foundry_tasks_only, false) do
+        load_seeds()
+      end
+
+      {:ok, _pid}
+    end
   end
 
   defp data_children do
@@ -25,6 +33,24 @@ defmodule IgamingRef.Application do
         {Oban, Application.fetch_env!(:igaming_ref, Oban)}
       ]
     end
+  end
+
+  defp load_seeds do
+    # Load demo data from seeds.exs for preview server.
+    # Only runs in dev environment when database is available.
+    case Application.get_env(:igaming_ref, :environment, :dev) do
+      :prod ->
+        :ok
+
+      _ ->
+        seed_file = Application.app_dir(:igaming_ref, "priv/repo/seeds.exs")
+
+        if File.exists?(seed_file) do
+          Code.eval_file(seed_file)
+        end
+    end
+  rescue
+    _ -> :ok  # Silently fail if seeds can't load (DB might not be ready yet)
   end
 end
 

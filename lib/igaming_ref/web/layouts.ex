@@ -1,4 +1,9 @@
 defmodule IgamingRef.Web.Layouts do
+  @moduledoc """
+  Phoenix layout components for the iGaming application.
+
+  Provides the root HTML layout and any reusable layout components used across pages.
+  """
   use Phoenix.Component
 
   def root(assigns) do
